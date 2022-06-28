@@ -139,11 +139,11 @@ class PostViewsTests(TestCase):
             reverse('posts:group_list', kwargs={'slug': self.group.slug}),
             reverse('posts:profile', kwargs={'username': self.user.username})
         ]
-        for reverse_page in pages:
-            with self.subTest(reverse_page=reverse_page):
-                response = self.authorized_client.get(reverse_page)
-                test_page = response.context['page_obj'][0]
-                self.assertEqual(test_page, self.post)
+        for page in pages:
+            with self.subTest(page=page):
+                response = self.authorized_client.get(page)
+                self.assertEqual(response.context.get(
+                    'page_obj')[0], self.post)
 
     def test_group_post(self):
         """ Проверка на ошибочное попадание поста не в ту группу. """
@@ -153,8 +153,7 @@ class PostViewsTests(TestCase):
                 kwargs={'slug': self.new_group.slug}
             )
         )
-        context = response.context['page_obj'].object_list
-        self.assertNotIn(self.post_response_context, context)
+        self.assertEqual(response.context.get('page_obj')[0], self.post)
 
 
 class PiginatorViewsTest(TestCase):
