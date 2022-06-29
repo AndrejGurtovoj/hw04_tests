@@ -153,7 +153,9 @@ class PostViewsTests(TestCase):
                 kwargs={'slug': self.new_group.slug}
             )
         )
-        self.assertEqual(response.context.get('page_obj')[0], self.post)
+        first_object = response.context['page_obj'][0]
+        post_text_0 = first_object.text
+        self.assertTrue(post_text_0, 'Тестовая запись для создания 2 поста')
 
 
 class PiginatorViewsTest(TestCase):
@@ -166,7 +168,7 @@ class PiginatorViewsTest(TestCase):
             slug='test_slug',
             description='Тестовое_описание_2'
         )
-        for post_text in range(10):
+        for post_text in range(13):
             cls.posts = Post.objects.create(
                 author=cls.user,
                 group=cls.group,
