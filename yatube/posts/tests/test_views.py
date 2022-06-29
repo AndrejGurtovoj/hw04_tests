@@ -159,8 +159,8 @@ class PostViewsTests(TestCase):
             )
         )
         first_object = response.context['page_obj'][0]
-        post_text_0 = first_object.text
-        self.assertNotIn(post_text_0, 'Тестовая запись для создания 2 поста')
+        post_text = first_object.text
+        self.assertNotIn(post_text, 'Тестовая запись для создания 2 поста')
 
 
 class PiginatorViewsTest(TestCase):
