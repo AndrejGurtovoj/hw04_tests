@@ -147,15 +147,20 @@ class PostViewsTests(TestCase):
 
     def test_group_post(self):
         """ Проверка на ошибочное попадание поста не в ту группу. """
+        Fake_group = Group.objects.create(
+            title='Тестовый заголовок',
+            slug='fake-slug',
+            description='Тестовое описание',
+        )
         response = self.authorized_client.get(
             reverse(
                 'posts:group_list',
-                kwargs={'slug': self.new_group.slug}
+                kwargs={'slug': Fake_group.slug}
             )
         )
         first_object = response.context['page_obj'][0]
         post_text_0 = first_object.text
-        self.assertTrue(post_text_0, 'Тестовая запись для создания 2 поста')
+        self.assertNotIn(post_text_0, 'Тестовая запись для создания 2 поста')
 
 
 class PiginatorViewsTest(TestCase):
