@@ -33,6 +33,7 @@ class PostViewsTests(TestCase):
         )
 
     def setUp(self):
+        self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
@@ -153,6 +154,8 @@ class PostViewsTests(TestCase):
                 kwargs={'slug': self.new_group.slug}
             )
         )
+        first_object = response.context['page_obj'][0]
+        self.assertEqual(self.post, first_object)
         self.assertEqual(response.context['page_obj'].paginator.count, 1)
 
 
