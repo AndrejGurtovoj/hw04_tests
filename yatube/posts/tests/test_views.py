@@ -154,9 +154,7 @@ class PostViewsTests(TestCase):
                 kwargs={'slug': self.new_group.slug}
             )
         )
-        first_object = response.context['page_obj'][0]
-        self.assertEqual(self.post, first_object)
-        self.assertEqual(response.context['page_obj'].paginator.count, 1)
+        self.assertEqual(response.context['page_obj'].paginator.count, 0)
 
 
 class PiginatorViewsTest(TestCase):

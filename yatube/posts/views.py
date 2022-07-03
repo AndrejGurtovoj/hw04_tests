@@ -25,14 +25,10 @@ def index(request):
 
 def group_posts(request, slug):
     templates = 'posts/group_list.html'
-    posts = Post.objects.all()
-    page_obj = page(request, posts)
     group = get_object_or_404(Group, slug=slug)
-    context = {
-        'group': group,
-        'page_obj': page_obj
-    }
-    return render(request, templates, context)
+    posts = group.posts.all()
+    page_obj = page(request, posts)
+    return render(request, templates, {'page_obj': page_obj, 'group': group})
 
 
 def profile(request, username):
