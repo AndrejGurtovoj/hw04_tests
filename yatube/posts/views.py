@@ -28,7 +28,11 @@ def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     posts = group.posts.all()
     page_obj = page(request, posts)
-    return render(request, templates, {'page_obj': page_obj, 'group': group})
+    context = {
+        'page_obj': page_obj,
+        'group': group
+    }
+    return render(request, templates, context)
 
 
 def profile(request, username):
