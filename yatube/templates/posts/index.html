@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load thumbnail %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
+{% load thumbnail%}
 
 
   <h1>Последние обновления сайта Yatube</h1>
@@ -10,16 +10,24 @@
   <article>
     <ul>
       <li>
-        Автор: {{ post.author.get_full_name }}
+        Автор: {{ post.author }}
+        <a href="{% url 'posts:profile' post.author.username %}">все посты пользователя</a>
       </li>
       <li>
         Дата публикации: {{ post.pub_date|date:"d E Y" }}
       </li>
-    </ul>      
+    </ul>
+    {% if post.image %}
+    {% thumbnail post.image "300x300" crop="center" upscale=True as im %}
+      <img class="card-img my-2" src="{{ im.url }}">
+    {% endthumbnail %}
+    {% endif %}      
     <p>{{post.text}}</p>
+    <a href="{% url 'posts:post_detail' post.pk %}">Подробная информация </a>
     {% if post.group %}
-    <a href="{% url 'posts:group_list' post.group.slug %}">{{post.group.title}}</a>
+    <a href="{% url 'posts:group_list' post.group.slug %}">{{post.group}}</a>
   </article>
+    <a href="{% url 'posts:group_list' post.group.slug %}">Все записи группы</a>
     <hr>{% endif %}
     {% if not forloop.last %}<hr>{% endif %}
 {% endfor %}

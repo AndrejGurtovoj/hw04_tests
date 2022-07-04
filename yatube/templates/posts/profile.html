@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load thumbnail %}
 {% block title %}Все записи пользователя{{ username.get_full_name }}{% endblock %}
 {% block content %}
+{% load thumbnail%}
               
         <h1>Все посты пользователя {{ author.username }} </h1>
         <h3>Всего постов: {{ author.posts.count }} </h3>   
@@ -17,6 +17,11 @@
                 Дата публикации: {{ post.pub_date|date:"d E Y" }} 
               </li>
             </ul>
+            {% if post.image %}
+            {% thumbnail post.image "300x300" crop="center" upscale=True as im %}
+              <img class="card-img my-2" src="{{ im.url }}">
+            {% endthumbnail %}
+            {% endif %}
             <p>{{ post.text }}</p>
             <a href="{% url 'posts:post_detail' post.pk %}">Подробная информация </a>
         </article>       
