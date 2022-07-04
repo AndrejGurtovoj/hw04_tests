@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load thumbnail %}
 {% block title %}
     {{ post.text|truncatechars:30  }}
 {% endblock %}
@@ -29,6 +29,9 @@
       </ul>
     </aside>
     <article class="col-12 col-md-9">
+      {% thumbnail post.image "300x300" crop="center" upscale=True as im %}
+        <img class="card-img my-2" src="{{ im.url }}">
+      {% endthumbnail %}
       <p>{{ post.text }}</p>
       {% if user == post.author %}
       <a class="btn btn-primary" href="{% url 'posts:post_edit' post.id %}">Редактировать запись</a>
