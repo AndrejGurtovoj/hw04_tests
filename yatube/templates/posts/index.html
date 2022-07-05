@@ -11,7 +11,7 @@
     <ul>
       <li>
         Автор: {{ post.author }}
-        <a href="{% url 'posts:profile' post.author.username %}">все посты пользователя</a>
+        <a href="{% url 'posts:profile' post.author.username %}">Все посты пользователя</a>
       </li>
       <li>
         Дата публикации: {{ post.pub_date|date:"d E Y" }}
@@ -23,12 +23,13 @@
     {% endthumbnail %}
     {% endif %}      
     <p>{{post.text}}</p>
-    <a href="{% url 'posts:post_detail' post.pk %}">Подробная информация </a>
+    <article>
+    <a href="{% url 'posts:post_detail' post.pk %}">Подробная Информация</a>
+    </article>
     {% if post.group %}
-    <a href="{% url 'posts:group_list' post.group.slug %}">{{post.group}}</a>
-  </article>
     <a href="{% url 'posts:group_list' post.group.slug %}">Все записи группы</a>
-    <hr>{% endif %}
+    {% endif %}
+  </article>
     {% if not forloop.last %}<hr>{% endif %}
 {% endfor %}
 {% include 'posts/includes/paginator.html' %}
