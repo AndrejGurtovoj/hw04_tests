@@ -82,7 +82,7 @@ class PostCreateFormTests(TestCase):
         posts_count = Post.objects.count()
         form_data = {
             'text': self.post.text,
-            'group': self.group.pk
+            'group': self.group.pk,
         }
         response = self.authorized_client.post(
             reverse('posts:post_edit', kwargs={'post_id': self.post.pk}),
