@@ -1,8 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.cache import cache_page
 
-from .models import Post, Group, User, Comment
+from .models import Post, Group, User, Comment, Follow
 from .forms import PostForm, CommentForm
 
 
@@ -106,3 +107,44 @@ def add_comment(request, post_id):
         comment.post = post
         comment.save()
     return redirect('posts:post_detail', post_id=post_id)
+
+
+@cache_page(60 * 15)
+def my_view(request):
+    ...
+
+
+@login_required
+def follow_index(request):
+    """Страница с постами авторов на которые подписан пользователь"""
+    posts = Post.objects.filter(author__following__user=request.user)
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    return render(
+        request,
+        'posts/follow.html',
+        {
+            'page': page,
+            'paginator': paginator,
+        }
+    )
+
+
+@login_required
+def profile_follow(request, username):
+    """Функция для подписки на автора"""
+    author = get_object_or_404(User, username=username)
+    currently_user = request.user
+    if currently_user != author:
+        Follow.objects.get_or_create(user=currently_user, author=author)
+    return redirect('posts:profile', username=username)
+
+
+@login_required
+def profile_unfollow(request, username):
+    """Функция для отписки от автора"""
+    author = get_object_or_404(User, username=username)
+    currently_user = request.user
+    Follow.objects.filter(user=currently_user, author=author).delete()
+    return redirect('posts:profile', username=username)

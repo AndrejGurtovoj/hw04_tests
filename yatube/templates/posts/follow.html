@@ -1,13 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}{{ title }}{% endblock %}
+{% block title %}Избранные авторы{% endblock %}
 {% block content %}
 {% load thumbnail%}
-{% load cache %}
 
 
-  <h1>Последние обновления сайта Yatube</h1>
+  <h1>Посты избранного автора</h1>
   
-  {% cache 20 index_page page%}
   {% include 'posts/includes/switcher.html' %}
   {% for post in page_obj %}
   <article>
@@ -33,8 +31,7 @@
     <a href="{% url 'posts:group_list' post.group.slug %}">Все записи группы</a>
     {% endif %}
   </article>
-    {% if not forloop.last %}<hr>{% endif %}
+{% if not forloop.last %}<hr>{% endif %}
 {% endfor %}
-{% endcache %}
 {% include 'posts/includes/paginator.html' %}
 {% endblock %}

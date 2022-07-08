@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.conf import settings
+from django.core.cache import cache
 from django import forms
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -80,6 +81,22 @@ class PostViewsTests(TestCase):
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
+
+    def test_cache_index_page_correct_context(self):
+        """Кэш index сформирован с правильным контекстом."""
+        first_response = self.authorized_client.get(reverse('posts:index'))
+        old_content = first_response.content
+        context = first_response.context['page_obj']
+        self.assertIn(self.post, context)
+        post = Post.objects.get(id=self.post.id)
+        post.delete()
+        second_response = self.authorized_client.get(reverse('posts:index'))
+        new_content = second_response.content
+        self.assertEqual(old_content, new_content)
+        cache.clear()
+        third_response = self.authorized_client.get(reverse('posts:index'))
+        new_new_content = third_response.content
+        self.assertNotEqual(old_content, new_new_content)
 
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
