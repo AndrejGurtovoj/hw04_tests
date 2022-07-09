@@ -9,7 +9,7 @@ from django.core.cache import cache
 from django import forms
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from ..models import Group, Post, Comment
+from ..models import Group, Post, Comment, Follow
 
 User = get_user_model()
 
@@ -71,6 +71,8 @@ class PostViewsTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
+        cache.clear()
+
     def post_response_context(self, response):
         """Проверяем Context в двух тестах"""
         form_fields = {
@@ -82,21 +84,17 @@ class PostViewsTests(TestCase):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
 
-    def test_cache_index_page_correct_context(self):
-        """Кэш index сформирован с правильным контекстом."""
-        first_response = self.authorized_client.get(reverse('posts:index'))
-        old_content = first_response.content
-        context = first_response.context['page_obj']
-        self.assertIn(self.post, context)
-        post = Post.objects.get(id=self.post.id)
-        post.delete()
-        second_response = self.authorized_client.get(reverse('posts:index'))
-        new_content = second_response.content
-        self.assertEqual(old_content, new_content)
+    def test_cache_index(self):
+        """Тест кэш index"""
+        get_index = self.authorized_client.get(reverse('posts:index'))
+        post4cache = Post.objects.get(pk=1)
+        post4cache.text = 'Кеш текст'
+        post4cache.save()
+        test1 = self.authorized_client.get(reverse('posts:index'))
+        self.assertEqual(get_index.content, test1.content)
         cache.clear()
-        third_response = self.authorized_client.get(reverse('posts:index'))
-        new_new_content = third_response.content
-        self.assertNotEqual(old_content, new_new_content)
+        test2 = self.authorized_client.get(reverse('posts:index'))
+        self.assertNotEqual(get_index.content, test2.content)
 
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
@@ -130,6 +128,7 @@ class PostViewsTests(TestCase):
         response = self.authorized_client.get(reverse('posts:index'))
         self.assertEqual(
             response.context['page_obj'].object_list[0], self.post)
+        self.assertContains(response, 'image')
 
     def test_group_list_show_correct_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
@@ -143,6 +142,7 @@ class PostViewsTests(TestCase):
         test_group = response.context.get('group').description
         self.assertEqual(test_group_title, 'Тестовая группа')
         self.assertEqual(test_group, self.group.description)
+        self.assertContains(response, 'image')
 
     def test_profile_show_correct_context(self):
         """Шаблон profile сформирован с правильным контекстом."""
@@ -152,6 +152,7 @@ class PostViewsTests(TestCase):
         )
         test_author = response.context.get('author')
         self.assertEqual(test_author, self.post.author)
+        self.assertContains(response, 'image')
 
     def test_post_detail_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
@@ -160,6 +161,7 @@ class PostViewsTests(TestCase):
             kwargs={'post_id': self.post.id})
         )
         self.assertEqual(response.context.get('post'), self.post)
+        self.assertContains(response, 'image')
 
     def test_create_post_show_correct_context(self):
         """Шаблон create_post сформирован с правильным контекстом."""
@@ -256,3 +258,23 @@ class PiginatorViewsTest(TestCase):
             with self.subTest(templates=templates[num]):
                 response = self.authorized_client.get(templates[num])
                 self.assertEqual(len(response.context['page_obj']), NUM_POSTS)
+
+    def test_profile_follow(self):
+        """Проверяем что пользователь может подписаться."""
+        follow_count = Follow.objects.count()
+        username = self.user.username
+        self.authorized_client.get(reverse(
+            'posts:profile_follow',
+            kwargs={'username': username}
+        ))
+        self.assertEqual(Follow.objects.count(), follow_count)
+
+    def test_profile_unfollow(self):
+        """Проверяем что пользователь может отписаться."""
+        follow_count = Follow.objects.count()
+        username = self.user.username
+        self.authorized_client.get(reverse(
+            'posts:profile_unfollow',
+            kwargs={'username': username}
+        ))
+        self.assertEqual(Follow.objects.count(), follow_count)
